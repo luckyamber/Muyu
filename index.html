@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>雲端定時念經機 3.0 (有聲版)</title>
+    <title>雲端定時念經機 3.1 (大悲咒版)</title>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;700&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -124,7 +124,7 @@
 
         @keyframes scrollUp {
             from { transform: translateY(0); }
-            to { transform: translateY(-130%); }
+            to { transform: translateY(-130%); } /* 向上捲動 */
         }
 
         /* 控制按鈕區 */
@@ -234,7 +234,7 @@
     <div class="top-menu">
         <select id="scriptureSelect">
             <option value="heart">般若波羅蜜多心經</option>
-            <option value="amitabha">南無阿彌陀佛 (聖號)</option>
+            <option value="dabeizhou">大悲咒 (千手千眼)</option>
             <option value="om">六字大明咒</option>
         </select>
     </div>
@@ -268,23 +268,25 @@
     </div>
 
     <script>
-        // --- 1. 資料庫 ---
+        // --- 1. 資料庫 (已新增大悲咒) ---
         const scriptures = {
             heart: `觀自在菩薩 行深般若波羅蜜多時 照見五蘊皆空 度一切苦厄\n\n舍利子 色不異空 空不異色 色即是空 空即是色\n受想行識 亦復如是\n\n舍利子 是諸法空相 不生不滅 不垢不淨 不增不減\n是故空中無色 無受想行識\n無眼耳鼻舌身意 無色聲香味觸法\n無眼界 乃至無意識界\n無無明 亦無無明盡 乃至無老死 亦無老死盡\n無苦集滅道 無智亦無得 以無所得故\n\n菩提薩埵 依般若波羅蜜多故 心無罣礙\n無罣礙故 無有恐怖 遠離顛倒夢想 究竟涅槃\n三世諸佛 依般若波羅蜜多故 得阿耨多羅三藐三菩提\n\n故知般若波羅蜜多 是大神咒 是大明咒 是無上咒 是無等等咒\n能除一切苦 真實不虛\n\n故說般若波羅蜜多咒 即說咒曰\n揭諦揭諦 波羅揭諦 波羅僧揭諦 菩提薩婆訶`,
-            amitabha: `南無阿彌陀佛\n南無阿彌陀佛\n南無阿彌陀佛\n南無阿彌陀佛\n南無阿彌陀佛\n南無阿彌陀佛\n南無阿彌陀佛\n南無阿彌陀佛\n南無阿彌陀佛\n南無阿彌陀佛`,
+            
+            dabeizhou: `南無喝囉怛那哆囉夜耶\n南無阿唎耶 婆盧羯帝爍缽囉耶 菩提薩埵婆耶\n摩訶薩埵婆耶 摩訶迦盧尼迦耶 唵\n薩皤囉罰曳 數怛那怛寫 南無悉吉栗埵伊蒙阿唎耶\n婆盧吉帝室佛囉楞馱婆 南無那囉謹墀\n醯利摩訶皤哆沙咩 薩婆阿他豆輸朋\n阿逝孕 薩婆薩哆 那摩婆薩哆 那摩婆伽\n摩罰特豆 怛姪他 唵 阿婆盧醯\n盧迦帝 迦羅帝 夷醯唎 摩訶菩提薩埵\n薩婆薩婆 摩囉摩囉 摩醯摩醯唎馱孕\n俱盧俱盧羯蒙 度盧度盧罰闍耶帝 摩訶罰闍耶帝\n陀囉陀囉 地唎尼 室佛囉耶 遮囉遮囉\n摩麼罰摩囉 穆帝隸 伊醯伊醯 室那室那\n阿囉參佛囉舍利 罰沙罰參 佛囉舍耶\n呼嚧呼嚧摩囉 呼嚧呼嚧醯利\n娑囉娑囉 悉唎悉唎 蘇嚧蘇嚧\n菩提夜菩提夜 菩薩夜菩薩夜 彌帝唎夜 那囉謹墀\n地利瑟尼那 波夜摩那 娑婆訶\n悉陀夜 娑婆訶 摩訶悉陀夜 娑婆訶\n悉陀喻藝 室皤囉耶 娑婆訶 那囉謹墀 娑婆訶\n摩囉那囉 娑婆訶 悉囉僧阿穆佉耶 娑婆訶\n娑婆摩訶阿悉陀夜 娑婆訶\n者吉囉阿悉陀夜 娑婆訶 波陀摩羯悉陀夜 娑婆訶\n那囉謹墀皤伽囉耶 娑婆訶\n摩婆利勝羯囉夜 娑婆訶\n南無喝囉怛那哆囉夜耶 南無阿唎耶\n婆盧吉帝 爍皤囉夜 娑婆訶\n唵 悉殿都 漫多囉 跋陀耶 娑婆訶`,
+            
             om: `唵 嘛 呢 叭 咪 吽\n唵 嘛 呢 叭 咪 吽\n唵 嘛 呢 叭 咪 吽\n唵 嘛 呢 叭 咪 吽\n唵 嘛 呢 叭 咪 吽\n唵 嘛 呢 叭 咪 吽`
         };
 
-        const speeds = { heart: 45, amitabha: 15, om: 10 }; // 滾動秒數
+        // 滾動速度 (秒) - 大悲咒設定為 90秒
+        const speeds = { heart: 45, dabeizhou: 90, om: 10 }; 
 
-        // --- 2. 聲音系統 (Sound System) ---
+        // --- 2. 聲音系統 ---
         let audioCtx;
         let muyuInterval;
         let muyuEnabled = true;
         let ttsEnabled = false;
         let speechUtterance = null;
 
-        // 初始化 AudioContext (必須在點擊後觸發)
         function initAudio() {
             if (!audioCtx) {
                 audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -294,23 +296,17 @@
             }
         }
 
-        // 合成木魚聲 (Synthesis)
         function playWoodBlock() {
             if (!audioCtx || !muyuEnabled) return;
-            
             const osc = audioCtx.createOscillator();
             const gainNode = audioCtx.createGain();
-            
             osc.connect(gainNode);
             gainNode.connect(audioCtx.destination);
             
-            // 聲音頻率設定 (模擬木頭敲擊的短促聲)
             osc.type = 'triangle'; 
-            // 頻率從 800Hz 快速降到 300Hz 模擬敲擊感
             osc.frequency.setValueAtTime(800, audioCtx.currentTime);
             osc.frequency.exponentialRampToValueAtTime(300, audioCtx.currentTime + 0.05);
             
-            // 音量包絡 (Attack & Decay)
             gainNode.gain.setValueAtTime(0, audioCtx.currentTime);
             gainNode.gain.linearRampToValueAtTime(1, audioCtx.currentTime + 0.01);
             gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.15);
@@ -319,16 +315,13 @@
             osc.stop(audioCtx.currentTime + 0.2);
         }
 
-        // TTS 朗讀
         function speakText(text) {
             if (!ttsEnabled) return;
-            window.speechSynthesis.cancel(); // 停止之前的
-            
+            window.speechSynthesis.cancel();
             speechUtterance = new SpeechSynthesisUtterance(text);
             speechUtterance.lang = 'zh-TW';
-            speechUtterance.rate = 0.9; // 語速稍慢
-            speechUtterance.pitch = 0.8; // 音調稍低，比較莊嚴
-            
+            speechUtterance.rate = 0.8; // 大悲咒語速可以稍慢
+            speechUtterance.pitch = 0.8; 
             window.speechSynthesis.speak(speechUtterance);
         }
 
@@ -350,7 +343,6 @@
         const muyuToggle = document.getElementById('muyuToggle');
         const ttsToggle = document.getElementById('ttsToggle');
 
-        // 初始化畫面
         function init() {
             const urlParams = new URLSearchParams(window.location.search);
             const dedicateName = urlParams.get('for');
@@ -369,7 +361,6 @@
             textEl.style.animationDuration = `${speeds[currentKey]}s`;
         }
 
-        // 聲音開關控制
         muyuToggle.addEventListener('click', () => {
             muyuEnabled = !muyuEnabled;
             muyuToggle.classList.toggle('active');
@@ -382,10 +373,8 @@
             ttsToggle.textContent = ttsEnabled ? '🗣️ AI 誦讀 (開)' : '🗣️ AI 誦讀 (關)';
         });
 
-        // 開始念經
         startBtn.addEventListener('click', () => {
-            initAudio(); // 啟動 AudioContext
-
+            initAudio();
             textEl.classList.add('scrolling');
             textEl.style.animationPlayState = 'running';
             
@@ -397,25 +386,20 @@
             isPaused = false;
             pauseBtn.textContent = "且慢 ⏸";
 
-            // 啟動木魚循環 (每 0.8 秒敲一次，配合節奏)
             clearInterval(muyuInterval);
-            muyuInterval = setInterval(playWoodBlock, 800);
+            muyuInterval = setInterval(playWoodBlock, 800); // 木魚速度
 
-            // 啟動朗讀
             if (ttsEnabled) speakText(textEl.textContent);
         });
 
-        // 暫停
         pauseBtn.addEventListener('click', () => {
             if (!isPaused) {
-                // 暫停狀態
                 textEl.style.animationPlayState = 'paused';
                 pauseBtn.textContent = "繼續 ▶";
-                clearInterval(muyuInterval); // 停木魚
-                window.speechSynthesis.pause(); // 停朗讀
+                clearInterval(muyuInterval);
+                window.speechSynthesis.pause();
                 isPaused = true;
             } else {
-                // 恢復狀態
                 initAudio();
                 textEl.style.animationPlayState = 'running';
                 pauseBtn.textContent = "且慢 ⏸";
@@ -426,13 +410,12 @@
             }
         });
 
-        // 停止 (功德圓滿)
         stopBtn.addEventListener('click', () => {
             textEl.classList.remove('scrolling');
-            void textEl.offsetWidth; // 重置動畫
+            void textEl.offsetWidth;
             
-            clearInterval(muyuInterval); // 停木魚
-            stopSpeaking(); // 停朗讀
+            clearInterval(muyuInterval);
+            stopSpeaking();
 
             startBtn.style.display = 'inline-block';
             pauseBtn.style.display = 'none';
@@ -444,11 +427,9 @@
             document.getElementById('dedicationModal').classList.add('active');
         });
 
-        // 循環計數
         textEl.addEventListener('animationiteration', () => {
             count++;
             countEl.textContent = count;
-            // 循環時若有開啟 TTS，重新朗讀
             if(ttsEnabled) speakText(textEl.textContent);
         });
 
@@ -458,7 +439,6 @@
             updateScripture();
         });
 
-        // Modal 操作
         document.getElementById('shareBtn').addEventListener('click', () => {
             const val = document.getElementById('dedicateTo').value.trim() || "眾生";
             const url = `${window.location.href.split('?')[0]}?for=${encodeURIComponent(val)}`;
