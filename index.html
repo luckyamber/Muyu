@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>雲端功德箱 - 極速念經機</title>
+    <style>
+        :root {
+            --bg-color: #1a1a1a;
+            --text-gold: #eebb44;
+            --btn-color: #333;
+            --btn-active: #444;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-color);
+            color: #ddd;
+            font-family: "Songti TC", "Noto Serif TC", serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            height: 100vh;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .lotus-bg {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 40vh;
+            opacity: 0.05;
+            pointer-events: none;
+            z-index: 0;
+            filter: drop-shadow(0 0 10px gold);
+        }
+
+        #flash-overlay {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background-color: rgba(255, 215, 0, 0.6);
+            opacity: 0;
+            pointer-events: none;
+            z-index: 999;
+            transition: opacity 0.1s;
+        }
+
+        .header { width: 100%; padding: 20px; display: flex; justify-content: flex-end; box-sizing: border-box; z-index: 10; }
+        select { background: #333; color: var(--text-gold); border: 1px solid var(--text-gold); padding: 10px; border-radius: 5px; font-size: 1rem; outline: none; }
+
+        .sutra-display {
+            height: 100px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            font-size: 1.5rem;
+            color: var(--text-gold);
+            padding: 20px;
+            z-index: 10;
+            opacity: 0.8;
+            transition: transform 0.5s ease-out, opacity 0.5s;
+        }
+
+        .muyu-container { flex-grow: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 10; }
+        #muyu-btn {
+            width: 200px; height: 180px;
+            background: radial-gradient(circle at 30% 30%, #5c4033, #2e2019);
+            border-radius: 50% 50% 45% 45%;
+            border: 4px solid #1a110d;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.5), inset 0 5px 10px rgba(255,255,255,0.1);
+            color: var(--text-gold);
+            font-size: 1.2rem;
+            font-weight: bold;
+            cursor: pointer;
+            position: relative;
+            transition: transform 0.1s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-shadow: 1px 1px 2px black;
+            user-select: none;
+        }
+        #muyu-btn:active { transform: scale(0.95); }
+        #muyu-btn::after { content: ''; position: absolute; bottom: 20px; width: 120px; height: 10px; background: #1a110d; border-radius: 10px; }
+
+        .controls {
+            width: 100%;
+            padding: 20px;
+            background: rgba(0,0,0,0.3);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-sizing: border-box;
+            z-index: 10;
+        }
+
+        .btn-group button {
+            background: transparent;
+            border: 1px solid #666;
+            color: #aaa;
+            padding: 8px 16px;
+            margin-right: 10px;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: all 0.3s;
+        }
+        .btn-group button:hover { border-color: var(--text-gold); color: var(--text-gold); }
+
+        .counter { font-size: 1.2rem; color: #888; }
+        .counter span { color: var(--text-gold); font-size: 1.5rem; font-family: monospace; }
+
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 2000; justify-content: center; align-items: center; }
+        .modal-content { background: #2a2a2a; padding: 30px; border-radius: 10px; border: 1px solid var(--text-gold); text-align: center; max-width: 80%; }
+        .modal-content input { width: 80%; padding: 10px; margin: 15px 0; background: #111; border: 1px solid #555; color: white; text-align: center; }
+        .modal-btn { background: var(--text-gold); color: black; border: none; padding: 10px 20px; cursor: pointer; font-weight: bold; margin: 5px; }
+    </style>
+</head>
+<body>
+
+    <div id="flash-overlay"></div>
+    <div class="lotus-bg">蓮花</div>
+
+    <div class="header">
+        <select id="sutra-select">
+            <option value="none" disabled selected>請選擇經文...</option>
+            <option value="heart">般若波羅蜜多心經</option>
+            <option value="amitabha">南無阿彌陀佛</option>
+            <option value="om">六字大明咒</option>
+        </select>
+    </div>
+
+    <div class="sutra-display" id="sutra-text">請先選擇經文</div>
+
+    <div class="muyu-container">
+        <div id="muyu-btn">敲我<br>消業障</div>
+    </div>
+
+    <div class="controls">
+        <div class="btn-group">
+            <button id="start-auto-btn">自動念經</button>
+            <button id="pause-btn" style="display:none;">暫停</button>
+            <button id="stop-btn" style="display:none;">停止／回向</button>
+        </div>
+        <div class="counter">功德 +<span id="count-display">0</span></div>
+    </div>
+
+    <div class="modal" id="dedicate-modal">
+        <div class="modal-content">
+            <h3 style="color:var(--text-gold)">功德圓滿</h3
