@@ -3,153 +3,476 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>雲端功德箱 - 功德狂飆</title>
+    <title>雲端定時念經機 3.0 (有聲版)</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg-color: #1a1a1a;
-            --text-gold: #eebb44;
-            --btn-color: #333;
-            --btn-active: #444;
+            --bg-color: #121212;
+            --text-gold: #cfaa6e;
+            --text-dim: #666;
+            --accent-red: #d45d5d;
+            --accent-green: #5d9e5d;
         }
 
         body {
             margin: 0;
             padding: 0;
             background-color: var(--bg-color);
-            color: #ddd;
-            font-family: "Songti TC", "Noto Serif TC", serif;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: space-between;
+            color: var(--text-gold);
+            font-family: 'Noto Serif TC', serif;
             height: 100vh;
             overflow: hidden;
+            display: flex;
+            flex-direction: column;
             position: relative;
         }
 
+        /* 禪意背景 */
         .lotus-bg {
             position: absolute;
-            top: 50%;
-            left: 50%;
+            top: 50%; left: 50%;
             transform: translate(-50%, -50%);
-            font-size: 40vh;
-            opacity: 0.05;
+            font-size: 60vh;
+            opacity: 0.08;
             pointer-events: none;
             z-index: 0;
-            filter: drop-shadow(0 0 10px gold);
-        }
-
-        #flash-overlay {
-            position: fixed;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            background-color: rgba(255, 215, 0, 0.6);
-            opacity: 0;
-            pointer-events: none;
-            z-index: 999;
-            transition: opacity 0.1s;
-        }
-
-        .header { width: 100%; padding: 20px; display: flex; justify-content: flex-end; box-sizing: border-box; z-index: 10; }
-        select { background: #333; color: var(--text-gold); border: 1px solid var(--text-gold); padding: 10px; border-radius: 5px; font-size: 1rem; outline: none; }
-
-        .sutra-display {
-            height: 100px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-            font-size: 1.5rem;
-            color: var(--text-gold);
-            padding: 20px;
-            z-index: 10;
-            opacity: 0.8;
-            transition: transform 0.5s ease-out, opacity 0.5s;
-        }
-
-        .muyu-container { flex-grow: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 10; }
-        #muyu-btn {
-            width: 200px; height: 180px;
-            background: radial-gradient(circle at 30% 30%, #5c4033, #2e2019);
-            border-radius: 50% 50% 45% 45%;
-            border: 4px solid #1a110d;
-            box-shadow: 0 10px 20px rgba(0,0,0,0.5), inset 0 5px 10px rgba(255,255,255,0.1);
-            color: var(--text-gold);
-            font-size: 1.2rem;
-            font-weight: bold;
-            cursor: pointer;
-            position: relative;
-            transition: transform 0.1s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            text-shadow: 1px 1px 2px black;
+            filter: grayscale(100%) sepia(30%);
             user-select: none;
         }
-        #muyu-btn:active { transform: scale(0.95); }
-        #muyu-btn::after { content: ''; position: absolute; bottom: 20px; width: 120px; height: 10px; background: #1a110d; border-radius: 10px; }
 
-        .controls {
-            width: 100%;
-            padding: 20px;
-            background: rgba(0,0,0,0.3);
+        /* 聲音控制面板 */
+        .sound-panel {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            z-index: 25;
             display: flex;
-            justify-content: space-between;
+            gap: 10px;
             align-items: center;
-            box-sizing: border-box;
-            z-index: 10;
         }
 
-        .btn-group button {
-            background: transparent;
-            border: 1px solid #666;
+        .sound-toggle {
+            background: rgba(255,255,255,0.1);
+            border: 1px solid #444;
             color: #aaa;
-            padding: 8px 16px;
-            margin-right: 10px;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
             cursor: pointer;
-            border-radius: 4px;
-            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            transition: all 0.2s;
         }
-        .btn-group button:hover { border-color: var(--text-gold); color: var(--text-gold); }
+        
+        .sound-toggle.active {
+            background: rgba(207, 170, 110, 0.2);
+            border-color: var(--text-gold);
+            color: var(--text-gold);
+        }
 
-        .counter { font-size: 1.2rem; color: #888; }
-        .counter span { color: var(--text-gold); font-size: 1.5rem; font-family: monospace; }
+        .sound-toggle:hover { background: rgba(255,255,255,0.2); }
 
-        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 2000; justify-content: center; align-items: center; }
-        .modal-content { background: #2a2a2a; padding: 30px; border-radius: 10px; border: 1px solid var(--text-gold); text-align: center; max-width: 80%; }
-        .modal-content input { width: 80%; padding: 10px; margin: 15px 0; background: #111; border: 1px solid #555; color: white; text-align: center; }
-        .modal-btn { background: var(--text-gold); color: black; border: none; padding: 10px 20px; cursor: pointer; font-weight: bold; margin: 5px; }
+        /* 右上選單 */
+        .top-menu {
+            position: absolute;
+            top: 20px; right: 20px;
+            z-index: 20;
+        }
+        select {
+            background: rgba(0,0,0,0.6);
+            color: var(--text-gold);
+            border: 1px solid var(--text-gold);
+            padding: 8px 15px;
+            font-family: inherit;
+            border-radius: 20px;
+            cursor: pointer;
+            outline: none;
+        }
+
+        /* 經文滾動區 */
+        .scripture-viewport {
+            flex: 1;
+            position: relative;
+            overflow: hidden;
+            z-index: 10;
+            mask-image: linear-gradient(to bottom, transparent, black 15%, black 85%, transparent);
+            -webkit-mask-image: linear-gradient(to bottom, transparent, black 15%, black 85%, transparent);
+            display: flex;
+            justify-content: center;
+        }
+
+        .scroll-content {
+            position: absolute;
+            top: 100%;
+            width: 80%;
+            max-width: 600px;
+            text-align: center;
+            font-size: 2rem;
+            line-height: 2;
+            white-space: pre-wrap;
+            font-weight: 700;
+            text-shadow: 0 0 10px rgba(207, 170, 110, 0.3);
+            padding-bottom: 100px;
+        }
+
+        .scrolling {
+            animation-name: scrollUp;
+            animation-timing-function: linear;
+            animation-iteration-count: infinite;
+        }
+
+        @keyframes scrollUp {
+            from { transform: translateY(0); }
+            to { transform: translateY(-130%); }
+        }
+
+        /* 控制按鈕區 */
+        .controls {
+            position: absolute;
+            bottom: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 20px;
+            z-index: 30;
+        }
+
+        button.main-btn {
+            border: none;
+            padding: 12px 30px;
+            border-radius: 50px;
+            font-size: 1.1rem;
+            font-family: inherit;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+        }
+
+        .btn-start { background: var(--text-gold); color: #1a1a1a; }
+        .btn-start:hover { transform: scale(1.05); background: #fff; }
+        
+        .btn-pause { background: #444; color: #fff; }
+        
+        .btn-stop { background: var(--accent-red); color: #fff; }
+        .btn-stop:hover { transform: scale(1.05); background: #ff7676; }
+
+        /* 計數器 */
+        .counter-box {
+            position: absolute;
+            bottom: 20px; right: 20px;
+            background: rgba(0,0,0,0.5);
+            padding: 10px 15px;
+            border-radius: 10px;
+            border: 1px solid #333;
+            z-index: 20;
+            font-size: 1rem;
+        }
+        .count-num { font-size: 1.4rem; font-weight: bold; color: #fff; }
+
+        /* 回向視窗 & Banner */
+        .dedication-banner {
+            background: linear-gradient(90deg, #d45d5d, #b53f3f);
+            color: #fff;
+            text-align: center;
+            padding: 8px;
+            font-size: 0.9rem;
+            display: none;
+            z-index: 100;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.5);
+            animation: slideDown 0.5s ease-out;
+        }
+        @keyframes slideDown { from {transform: translateY(-100%);} to {transform: translateY(0);} }
+
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.9);
+            z-index: 50; display: none;
+            justify-content: center; align-items: center;
+        }
+        .modal-overlay.active { display: flex; }
+        
+        .modal-content {
+            background: #222;
+            border: 1px solid var(--text-gold);
+            padding: 30px;
+            border-radius: 15px;
+            text-align: center;
+            max-width: 90%; width: 320px;
+        }
+        .modal-input {
+            width: 80%; padding: 12px; margin: 15px 0;
+            background: #333; border: 1px solid #555;
+            color: #fff; border-radius: 5px; text-align: center;
+        }
+        .close-modal { margin-top: 10px; background: transparent; color: #666; border: none; cursor: pointer; }
+        .close-modal:hover { color: #fff; }
+
+        /* 手機 RWD */
+        @media (max-width: 600px) {
+            .sound-panel { flex-direction: column; align-items: flex-start; }
+            .scroll-content { font-size: 1.5rem; width: 90%; }
+        }
     </style>
 </head>
 <body>
 
-    <div id="flash-overlay"></div>
-    <div class="lotus-bg">蓮花</div>
+    <div class="lotus-bg">🪷</div>
+    <div id="dedicationBanner" class="dedication-banner"></div>
 
-    <div class="header">
-        <select id="sutra-select">
-            <option value="none" disabled selected>請選擇經文...</option>
+    <!-- 左上聲音控制 -->
+    <div class="sound-panel">
+        <button id="muyuToggle" class="sound-toggle active">
+            🪘 電子木魚 (開)
+        </button>
+        <button id="ttsToggle" class="sound-toggle">
+            🗣️ AI 誦讀 (關)
+        </button>
+    </div>
+
+    <div class="top-menu">
+        <select id="scriptureSelect">
             <option value="heart">般若波羅蜜多心經</option>
-            <option value="amitabha">南無阿彌陀佛</option>
+            <option value="amitabha">南無阿彌陀佛 (聖號)</option>
             <option value="om">六字大明咒</option>
         </select>
     </div>
 
-    <div class="sutra-display" id="sutra-text">請先選擇經文</div>
-
-    <div class="muyu-container">
-        <div id="muyu-btn">敲我<br>消業障</div>
+    <div class="scripture-viewport">
+        <div id="scrollText" class="scroll-content"></div>
     </div>
 
     <div class="controls">
-        <div class="btn-group">
-            <button id="start-auto-btn">自動念經</button>
-            <button id="pause-btn" style="display:none;">暫停</button>
-            <button id="stop-btn" style="display:none;">停止／回向</button>
-        </div>
-        <div class="counter">功德 +<span id="count-display">0</span></div>
+        <button id="startBtn" class="main-btn btn-start">敲我消業障 ▶</button>
+        <button id="pauseBtn" class="main-btn btn-pause" style="display:none;">且慢 ⏸</button>
+        <button id="stopBtn" class="main-btn btn-stop" style="display:none;">功德圓滿 ⏹</button>
     </div>
 
-    <div class="modal" id="dedicate-modal">
+    <div class="counter-box">
+        已念 <span id="countNum" class="count-num">0</span> 遍
+    </div>
+
+    <!-- 回向 Modal -->
+    <div id="dedicationModal" class="modal-overlay">
         <div class="modal-content">
-            <h3 style="color:var(--text-gold)">功德圓滿</h3
+            <h3>🙏 施主功德無量</h3>
+            <p>本次共念誦 <span id="finalCount" style="color:var(--text-gold); font-weight:bold;"></span> 遍。</p>
+            <input type="text" id="dedicateTo" class="modal-input" placeholder="例：全家平安、我的貓、世界和平">
+            <button id="shareBtn" class="main-btn btn-start" style="width:100%">產生回向連結</button>
+            <button id="closeModal" class="close-modal">不回向，關閉</button>
+            <div id="shareResult" style="margin-top:15px; color:#888; display:none; font-size:0.9rem;">
+                連結已複製！<br>傳給朋友分享功德。
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- 1. 資料庫 ---
+        const scriptures = {
+            heart: `觀自在菩薩 行深般若波羅蜜多時 照見五蘊皆空 度一切苦厄\n\n舍利子 色不異空 空不異色 色即是空 空即是色\n受想行識 亦復如是\n\n舍利子 是諸法空相 不生不滅 不垢不淨 不增不減\n是故空中無色 無受想行識\n無眼耳鼻舌身意 無色聲香味觸法\n無眼界 乃至無意識界\n無無明 亦無無明盡 乃至無老死 亦無老死盡\n無苦集滅道 無智亦無得 以無所得故\n\n菩提薩埵 依般若波羅蜜多故 心無罣礙\n無罣礙故 無有恐怖 遠離顛倒夢想 究竟涅槃\n三世諸佛 依般若波羅蜜多故 得阿耨多羅三藐三菩提\n\n故知般若波羅蜜多 是大神咒 是大明咒 是無上咒 是無等等咒\n能除一切苦 真實不虛\n\n故說般若波羅蜜多咒 即說咒曰\n揭諦揭諦 波羅揭諦 波羅僧揭諦 菩提薩婆訶`,
+            amitabha: `南無阿彌陀佛\n南無阿彌陀佛\n南無阿彌陀佛\n南無阿彌陀佛\n南無阿彌陀佛\n南無阿彌陀佛\n南無阿彌陀佛\n南無阿彌陀佛\n南無阿彌陀佛\n南無阿彌陀佛`,
+            om: `唵 嘛 呢 叭 咪 吽\n唵 嘛 呢 叭 咪 吽\n唵 嘛 呢 叭 咪 吽\n唵 嘛 呢 叭 咪 吽\n唵 嘛 呢 叭 咪 吽\n唵 嘛 呢 叭 咪 吽`
+        };
+
+        const speeds = { heart: 45, amitabha: 15, om: 10 }; // 滾動秒數
+
+        // --- 2. 聲音系統 (Sound System) ---
+        let audioCtx;
+        let muyuInterval;
+        let muyuEnabled = true;
+        let ttsEnabled = false;
+        let speechUtterance = null;
+
+        // 初始化 AudioContext (必須在點擊後觸發)
+        function initAudio() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+        }
+
+        // 合成木魚聲 (Synthesis)
+        function playWoodBlock() {
+            if (!audioCtx || !muyuEnabled) return;
+            
+            const osc = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
+            
+            osc.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+            
+            // 聲音頻率設定 (模擬木頭敲擊的短促聲)
+            osc.type = 'triangle'; 
+            // 頻率從 800Hz 快速降到 300Hz 模擬敲擊感
+            osc.frequency.setValueAtTime(800, audioCtx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(300, audioCtx.currentTime + 0.05);
+            
+            // 音量包絡 (Attack & Decay)
+            gainNode.gain.setValueAtTime(0, audioCtx.currentTime);
+            gainNode.gain.linearRampToValueAtTime(1, audioCtx.currentTime + 0.01);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.15);
+            
+            osc.start();
+            osc.stop(audioCtx.currentTime + 0.2);
+        }
+
+        // TTS 朗讀
+        function speakText(text) {
+            if (!ttsEnabled) return;
+            window.speechSynthesis.cancel(); // 停止之前的
+            
+            speechUtterance = new SpeechSynthesisUtterance(text);
+            speechUtterance.lang = 'zh-TW';
+            speechUtterance.rate = 0.9; // 語速稍慢
+            speechUtterance.pitch = 0.8; // 音調稍低，比較莊嚴
+            
+            window.speechSynthesis.speak(speechUtterance);
+        }
+
+        function stopSpeaking() {
+            window.speechSynthesis.cancel();
+        }
+
+        // --- 3. 主要邏輯 ---
+        let count = 0;
+        let isPaused = false;
+        let currentKey = 'heart';
+
+        const textEl = document.getElementById('scrollText');
+        const countEl = document.getElementById('countNum');
+        const startBtn = document.getElementById('startBtn');
+        const pauseBtn = document.getElementById('pauseBtn');
+        const stopBtn = document.getElementById('stopBtn');
+        const selectEl = document.getElementById('scriptureSelect');
+        const muyuToggle = document.getElementById('muyuToggle');
+        const ttsToggle = document.getElementById('ttsToggle');
+
+        // 初始化畫面
+        function init() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const dedicateName = urlParams.get('for');
+            if (dedicateName) {
+                const banner = document.getElementById('dedicationBanner');
+                banner.textContent = `🔔 叮！收到來自朋友的回向，祝願：「${decodeURIComponent(dedicateName)}」`;
+                banner.style.display = 'block';
+                setTimeout(() => { banner.style.display = 'none'; }, 6000);
+            }
+            updateScripture();
+        }
+
+        function updateScripture() {
+            currentKey = selectEl.value;
+            textEl.textContent = scriptures[currentKey];
+            textEl.style.animationDuration = `${speeds[currentKey]}s`;
+        }
+
+        // 聲音開關控制
+        muyuToggle.addEventListener('click', () => {
+            muyuEnabled = !muyuEnabled;
+            muyuToggle.classList.toggle('active');
+            muyuToggle.textContent = muyuEnabled ? '🪘 電子木魚 (開)' : '🪘 電子木魚 (關)';
+        });
+
+        ttsToggle.addEventListener('click', () => {
+            ttsEnabled = !ttsEnabled;
+            ttsToggle.classList.toggle('active');
+            ttsToggle.textContent = ttsEnabled ? '🗣️ AI 誦讀 (開)' : '🗣️ AI 誦讀 (關)';
+        });
+
+        // 開始念經
+        startBtn.addEventListener('click', () => {
+            initAudio(); // 啟動 AudioContext
+
+            textEl.classList.add('scrolling');
+            textEl.style.animationPlayState = 'running';
+            
+            startBtn.style.display = 'none';
+            pauseBtn.style.display = 'inline-block';
+            stopBtn.style.display = 'inline-block';
+            selectEl.disabled = true;
+            
+            isPaused = false;
+            pauseBtn.textContent = "且慢 ⏸";
+
+            // 啟動木魚循環 (每 0.8 秒敲一次，配合節奏)
+            clearInterval(muyuInterval);
+            muyuInterval = setInterval(playWoodBlock, 800);
+
+            // 啟動朗讀
+            if (ttsEnabled) speakText(textEl.textContent);
+        });
+
+        // 暫停
+        pauseBtn.addEventListener('click', () => {
+            if (!isPaused) {
+                // 暫停狀態
+                textEl.style.animationPlayState = 'paused';
+                pauseBtn.textContent = "繼續 ▶";
+                clearInterval(muyuInterval); // 停木魚
+                window.speechSynthesis.pause(); // 停朗讀
+                isPaused = true;
+            } else {
+                // 恢復狀態
+                initAudio();
+                textEl.style.animationPlayState = 'running';
+                pauseBtn.textContent = "且慢 ⏸";
+                muyuInterval = setInterval(playWoodBlock, 800);
+                window.speechSynthesis.resume();
+                if(ttsEnabled && !window.speechSynthesis.speaking) speakText(textEl.textContent);
+                isPaused = false;
+            }
+        });
+
+        // 停止 (功德圓滿)
+        stopBtn.addEventListener('click', () => {
+            textEl.classList.remove('scrolling');
+            void textEl.offsetWidth; // 重置動畫
+            
+            clearInterval(muyuInterval); // 停木魚
+            stopSpeaking(); // 停朗讀
+
+            startBtn.style.display = 'inline-block';
+            pauseBtn.style.display = 'none';
+            stopBtn.style.display = 'none';
+            selectEl.disabled = false;
+            startBtn.textContent = "再念一次 ▶";
+            
+            document.getElementById('finalCount').textContent = count;
+            document.getElementById('dedicationModal').classList.add('active');
+        });
+
+        // 循環計數
+        textEl.addEventListener('animationiteration', () => {
+            count++;
+            countEl.textContent = count;
+            // 循環時若有開啟 TTS，重新朗讀
+            if(ttsEnabled) speakText(textEl.textContent);
+        });
+
+        selectEl.addEventListener('change', () => {
+            count = 0;
+            countEl.textContent = 0;
+            updateScripture();
+        });
+
+        // Modal 操作
+        document.getElementById('shareBtn').addEventListener('click', () => {
+            const val = document.getElementById('dedicateTo').value.trim() || "眾生";
+            const url = `${window.location.href.split('?')[0]}?for=${encodeURIComponent(val)}`;
+            navigator.clipboard.writeText(url).then(() => {
+                document.getElementById('shareResult').style.display = 'block';
+            });
+        });
+        
+        document.getElementById('closeModal').addEventListener('click', () => {
+            document.getElementById('dedicationModal').classList.remove('active');
+            document.getElementById('shareResult').style.display = 'none';
+        });
+
+        init();
+    </script>
+</body>
+</html>
